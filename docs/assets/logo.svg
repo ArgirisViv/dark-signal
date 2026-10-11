@@ -1,0 +1,41 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" role="img" aria-label="Dark Signal eye logo">
+  <defs>
+    <linearGradient id="signalEyeGradient" x1="36" y1="54" x2="220" y2="206" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#22d3ee"/>
+      <stop offset="0.55" stop-color="#38bdf8"/>
+      <stop offset="1" stop-color="#6366f1"/>
+    </linearGradient>
+    <linearGradient id="signalSweepGradient" x1="124" y1="132" x2="190" y2="78" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#22d3ee"/>
+      <stop offset="0.68" stop-color="#38bdf8"/>
+      <stop offset="1" stop-color="#4338ca" stop-opacity="0.12"/>
+    </linearGradient>
+    <filter id="signalEyeGlow" x="-35%" y="-35%" width="170%" height="170%">
+      <feGaussianBlur stdDeviation="3" result="blur"/>
+      <feMerge>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+
+  <g fill="none" stroke="url(#signalEyeGradient)" stroke-linecap="round" stroke-linejoin="round">
+    <path
+      d="M24 132c27-39 64-62 104-62s77 23 104 62c-27 39-64 62-104 62S51 171 24 132Z"
+      stroke-width="7"
+      filter="url(#signalEyeGlow)"
+    />
+    <circle cx="128" cy="132" r="54" stroke-width="7"/>
+    <circle cx="128" cy="132" r="36" stroke-width="3.5" opacity="0.78"/>
+    <circle cx="128" cy="132" r="19" stroke-width="3.5" opacity="0.82"/>
+    <path d="M178 60c17 7 31 21 38 38" stroke-width="7"/>
+    <path d="M183 43c24 9 44 29 53 53" stroke-width="7" opacity="0.9"/>
+    <path d="M78 204c-17-7-31-21-38-38" stroke-width="7"/>
+    <path d="M73 221c-24-9-44-29-53-53" stroke-width="7" opacity="0.9"/>
+  </g>
+
+  <path d="M128 132 188 79l-30 59Z" fill="url(#signalSweepGradient)" opacity="0.95"/>
+  <circle cx="128" cy="132" r="8.5" fill="#22d3ee" filter="url(#signalEyeGlow)"/>
+  <circle cx="103" cy="105" r="5" fill="#22d3ee"/>
+  <circle cx="151" cy="157" r="5" fill="#6366f1"/>
+</svg>

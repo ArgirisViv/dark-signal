@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" role="img" aria-label="Dark Signal wave logo">
+  <defs>
+    <linearGradient id="waveEdge" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#38bdf8"/>
+      <stop offset="100%" stop-color="#6366f1"/>
+    </linearGradient>
+    <radialGradient id="core" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#22d3ee" stop-opacity="0.8"/>
+      <stop offset="100%" stop-color="#0b1220" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <rect width="256" height="256" rx="48" fill="#0b1220"/>
+  <circle cx="128" cy="128" r="70" fill="url(#core)"/>
+  <path d="M48 128c22-40 60-64 80-64s58 24 80 64" fill="none" stroke="url(#waveEdge)" stroke-width="8" stroke-linecap="round"/>
+  <path d="M56 128c18-28 46-44 72-44s54 16 72 44" fill="none" stroke="rgba(56,189,248,0.55)" stroke-width="6" stroke-linecap="round"/>
+  <path d="M68 128c14-18 34-28 60-28s46 10 60 28" fill="none" stroke="rgba(99,102,241,0.5)" stroke-width="4" stroke-linecap="round"/>
+  <circle cx="128" cy="128" r="10" fill="#38bdf8"/>
+</svg>

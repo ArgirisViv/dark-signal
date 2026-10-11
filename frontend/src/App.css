@@ -1,0 +1,213 @@
+/* Global layout helpers for the app shell */
+.app {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background: transparent;
+  position: relative;
+}
+
+.app > * {
+  position: relative;
+  z-index: 1;
+}
+
+.app > .header {
+  z-index: 200;
+}
+
+.app > .cyber-background {
+  position: fixed;
+  z-index: 0;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.cyber-background-network {
+  position: absolute;
+  inset: -7rem;
+  background-image:
+    radial-gradient(circle, rgba(125, 211, 252, 0.48) 0 1.2px, transparent 1.8px),
+    linear-gradient(rgba(56, 189, 248, 0.086) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(56, 189, 248, 0.086) 1px, transparent 1px);
+  background-position: 0 0, 0 0, 0 0;
+  background-size: 96px 96px, 96px 96px, 96px 96px;
+  opacity: 0.49;
+  mask-image: radial-gradient(ellipse at center, #000 12%, rgba(0, 0, 0, 0.72) 58%, transparent 92%);
+  transform: perspective(900px) rotateX(5deg) scale(1.05);
+  transform-origin: center bottom;
+  animation: professionalNetworkDrift 42s linear infinite;
+}
+
+.cyber-background-beam {
+  position: absolute;
+  top: -22%;
+  bottom: -22%;
+  left: -24rem;
+  width: 30rem;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(56, 189, 248, 0.018) 25%,
+    rgba(56, 189, 248, 0.105) 50%,
+    rgba(99, 102, 241, 0.045) 68%,
+    transparent
+  );
+  filter: blur(1.2rem);
+  transform: skewX(-12deg);
+  animation: professionalSignalPass 24s ease-in-out infinite;
+}
+
+.cyber-background-node {
+  position: absolute;
+  width: 0.42rem;
+  height: 0.42rem;
+  border: 1px solid rgba(125, 211, 252, 0.62);
+  border-radius: 50%;
+  background: rgba(56, 189, 248, 0.5);
+  box-shadow:
+    0 0 0 0 rgba(56, 189, 248, 0.22),
+    0 0 1rem rgba(56, 189, 248, 0.38);
+  opacity: 0.76;
+  animation: professionalNodePulse 6s ease-in-out infinite;
+}
+
+.cyber-background-node::after {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 8rem;
+  height: 1px;
+  background: linear-gradient(90deg, rgba(56, 189, 248, 0.3), transparent);
+  transform: rotate(var(--node-angle)) translateY(-50%);
+  transform-origin: left center;
+  content: '';
+}
+
+.cyber-background-node.node-one {
+  top: 24%;
+  left: 8%;
+  --node-angle: 18deg;
+}
+
+.cyber-background-node.node-two {
+  top: 47%;
+  right: 11%;
+  --node-angle: 164deg;
+  animation-delay: -2s;
+}
+
+.cyber-background-node.node-three {
+  bottom: 17%;
+  left: 38%;
+  --node-angle: -22deg;
+  animation-delay: -4s;
+}
+
+.app::before {
+  content: '';
+  position: fixed;
+  top: -35%;
+  left: 18%;
+  width: 74rem;
+  height: 74rem;
+  pointer-events: none;
+  border-radius: 50%;
+  background: conic-gradient(
+    from 220deg,
+    transparent 0deg,
+    rgba(56, 189, 248, 0.06) 38deg,
+    transparent 76deg,
+    rgba(99, 102, 241, 0.055) 150deg,
+    transparent 205deg
+  );
+  filter: blur(2rem);
+  transform-origin: center;
+  animation: ambientSignalSweep 38s linear infinite;
+  z-index: 0;
+}
+
+.app::after {
+  position: fixed;
+  right: -18rem;
+  bottom: -24rem;
+  width: 54rem;
+  height: 54rem;
+  border: 1px solid rgba(56, 189, 248, 0.05);
+  border-radius: 50%;
+  background:
+    repeating-radial-gradient(
+      circle,
+      transparent 0 4.8rem,
+      rgba(56, 189, 248, 0.035) 4.85rem 4.9rem
+    );
+  opacity: 0.8;
+  content: '';
+  pointer-events: none;
+  animation: ambientRadarPulse 12s ease-in-out infinite;
+  z-index: 0;
+}
+
+@keyframes ambientSignalSweep {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes ambientRadarPulse {
+  0%,
+  100% {
+    opacity: 0.55;
+    transform: scale(0.96);
+  }
+  50% {
+    opacity: 0.9;
+    transform: scale(1.04);
+  }
+}
+
+@keyframes professionalNetworkDrift {
+  from {
+    background-position: 0 0, 0 0, 0 0;
+  }
+  to {
+    background-position: 96px 48px, 96px 48px, 96px 48px;
+  }
+}
+
+@keyframes professionalSignalPass {
+  0%,
+  18% {
+    left: -24rem;
+    opacity: 0;
+  }
+  35% {
+    opacity: 0.8;
+  }
+  82% {
+    opacity: 0.55;
+  }
+  100% {
+    left: calc(100% + 24rem);
+    opacity: 0;
+  }
+}
+
+@keyframes professionalNodePulse {
+  0%,
+  100% {
+    opacity: 0.48;
+    box-shadow:
+      0 0 0 0 rgba(56, 189, 248, 0.2),
+      0 0 0.7rem rgba(56, 189, 248, 0.28);
+    transform: scale(0.92);
+  }
+  50% {
+    opacity: 0.82;
+    box-shadow:
+      0 0 0 0.55rem rgba(56, 189, 248, 0),
+      0 0 1.15rem rgba(56, 189, 248, 0.44);
+    transform: scale(1.06);
+  }
+}

@@ -1,0 +1,96 @@
+services:
+  database:
+    image: postgres:16-alpine
+    container_name: dark-signal-database
+    restart: unless-stopped
+
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-dark_signal}
+      POSTGRES_USER: ${POSTGRES_USER:-dark_signal_user}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in the local .env file}
+
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - pg_isready -U ${POSTGRES_USER:-dark_signal_user} -d ${POSTGRES_DB:-dark_signal}
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+    networks:
+      - dark_signal_network
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+
+    container_name: dark-signal-backend
+    restart: unless-stopped
+
+    environment:
+      APP_NAME: Dark Signal
+      APP_MODE: EDUCATIONAL
+      LOG_LEVEL: INFO
+
+      DATABASE_URL: postgresql+psycopg://${POSTGRES_USER:-dark_signal_user}:${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in the local .env file}@database:5432/${POSTGRES_DB:-dark_signal}
+      AUTO_CREATE_SCHEMA: "False"
+
+      SECRET_KEY: ${SECRET_KEY:?Set SECRET_KEY in the local .env file}
+      ACCESS_TOKEN_EXPIRE_MINUTES: ${ACCESS_TOKEN_EXPIRE_MINUTES:-60}
+      BOOTSTRAP_TOKEN: ${BOOTSTRAP_TOKEN:?Set BOOTSTRAP_TOKEN in the local .env file}
+
+      FRONTEND_BASE_URL: ${FRONTEND_BASE_URL:-http://localhost:3000}
+      SIMULATION_LINK_BASE_URL: ${SIMULATION_LINK_BASE_URL:-http://localhost:8000}
+      OPENAI_API_KEY: ${OPENAI_API_KEY:-}
+      OPENAI_MODEL: ${OPENAI_MODEL:-gpt-5.6}
+      OPENAI_TIMEOUT_SECONDS: ${OPENAI_TIMEOUT_SECONDS:-45}
+
+      SMTP_HOST: ${SMTP_HOST:-}
+      SMTP_PORT: ${SMTP_PORT:-587}
+      SMTP_USER: ${SMTP_USER:-}
+      SMTP_PASSWORD: ${SMTP_PASSWORD:-}
+      SMTP_FROM: ${SMTP_FROM:-}
+      SMTP_TLS: ${SMTP_TLS:-true}
+      SMTP_SSL: ${SMTP_SSL:-false}
+      SMTP_SANDBOX_MODE: ${SMTP_SANDBOX_MODE:-false}
+      SMTP_SANDBOX_RECIPIENT: ${SMTP_SANDBOX_RECIPIENT:-}
+
+    depends_on:
+      database:
+        condition: service_healthy
+
+    ports:
+      - "8000:8000"
+
+    networks:
+      - dark_signal_network
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      args:
+        VITE_API_BASE_URL: /api
+
+    container_name: dark-signal-frontend
+    restart: unless-stopped
+
+    depends_on:
+      - backend
+
+    ports:
+      - "3000:80"
+
+    networks:
+      - dark_signal_network
+
+volumes:
+  postgres_data:
+
+networks:
+  dark_signal_network:
+    driver: bridge 

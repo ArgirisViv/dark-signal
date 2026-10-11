@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" role="img" aria-label="Dark Signal logo">
+  <defs>
+    <linearGradient id="shieldGradient" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#38bdf8"/>
+      <stop offset="100%" stop-color="#6366f1"/>
+    </linearGradient>
+    <linearGradient id="pulseGradient" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#22d3ee"/>
+      <stop offset="100%" stop-color="#38bdf8"/>
+    </linearGradient>
+  </defs>
+  <rect width="256" height="256" rx="48" fill="#0b1220"/>
+  <path
+    d="M128 32c-26 18-52 24-84 28v74c0 52 36 88 84 110 48-22 84-58 84-110V60c-32-4-58-10-84-28Z"
+    fill="rgba(56,189,248,0.08)"
+    stroke="url(#shieldGradient)"
+    stroke-width="6"
+  />
+  <circle cx="128" cy="128" r="44" fill="none" stroke="url(#pulseGradient)" stroke-width="6"/>
+  <circle cx="128" cy="128" r="8" fill="#38bdf8"/>
+  <path d="M128 128 L188 96" stroke="#22d3ee" stroke-width="5" stroke-linecap="round"/>
+  <path d="M80 128a48 48 0 0 1 96 0" fill="none" stroke="rgba(56,189,248,0.6)" stroke-width="4"/>
+  <path d="M68 128a60 60 0 0 1 120 0" fill="none" stroke="rgba(99,102,241,0.6)" stroke-width="3"/>
+</svg>

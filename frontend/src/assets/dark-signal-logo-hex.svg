@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" role="img" aria-label="Dark Signal hex logo">
+  <defs>
+    <linearGradient id="hexEdge" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#38bdf8"/>
+      <stop offset="100%" stop-color="#6366f1"/>
+    </linearGradient>
+    <linearGradient id="sweep" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#22d3ee" stop-opacity="0.0"/>
+      <stop offset="100%" stop-color="#22d3ee" stop-opacity="0.8"/>
+    </linearGradient>
+  </defs>
+  <rect width="256" height="256" rx="48" fill="#0b1220"/>
+  <path d="M128 24 216 72v112l-88 48-88-48V72Z"
+        fill="rgba(15, 23, 42, 0.7)" stroke="url(#hexEdge)" stroke-width="6"/>
+  <circle cx="128" cy="128" r="64" fill="none" stroke="rgba(56,189,248,0.35)" stroke-width="3"/>
+  <circle cx="128" cy="128" r="44" fill="none" stroke="rgba(99,102,241,0.45)" stroke-width="2"/>
+  <path d="M128 128 L196 96" stroke="#22d3ee" stroke-width="6" stroke-linecap="round"/>
+  <circle cx="128" cy="128" r="8" fill="#38bdf8"/>
+  <path d="M64 148c16 10 38 18 64 18s48-8 64-18" fill="none" stroke="url(#sweep)" stroke-width="6" stroke-linecap="round"/>
+</svg>

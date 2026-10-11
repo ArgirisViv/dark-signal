@@ -1,0 +1,783 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Analytics Dashboard - Dark Signal</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #38bdf8;
+            --secondary: #0ea5e9;
+            --accent: #6366f1;
+            --success: #22d3ee;
+            --danger: #f87171;
+            --warning: #f59e0b;
+            --dark: #0b1220;
+            --light: #101827;
+            --text: #e2e8f0;
+            --text-light: #94a3b8;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: radial-gradient(circle at 10% 10%, rgba(56, 189, 248, 0.18), transparent 40%),
+                radial-gradient(circle at 90% 15%, rgba(99, 102, 241, 0.18), transparent 45%),
+                linear-gradient(135deg, #060913 0%, #0b1220 100%);
+            color: var(--text);
+            min-height: 100vh;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            background: radial-gradient(circle at 50% 80%, rgba(34, 211, 238, 0.12), transparent 40%);
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        body::after {
+            content: '';
+            position: fixed;
+            inset: 0;
+            background-image:
+                linear-gradient(rgba(56, 189, 248, 0.06) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(56, 189, 248, 0.06) 1px, transparent 1px);
+            background-size: 60px 60px;
+            opacity: 0.35;
+            animation: gridScroll 18s linear infinite;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        @keyframes gridScroll {
+            from { background-position: 0 0, 0 0; }
+            to { background-position: 0 120px, 120px 0; }
+        }
+
+        header {
+            background: linear-gradient(135deg, rgba(15, 23, 42, 0.95), rgba(30, 41, 59, 0.95));
+            backdrop-filter: blur(16px);
+            box-shadow: 0 16px 40px rgba(2, 6, 23, 0.6);
+            padding: 1.5rem 2rem;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            border-bottom: 1px solid rgba(148, 163, 184, 0.2);
+        }
+
+        .header-content {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 2rem;
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: white;
+            text-shadow: 0 6px 16px rgba(15, 23, 42, 0.6);
+        }
+
+        .nav {
+            display: flex;
+            gap: 1.25rem;
+            align-items: center;
+            flex: 1;
+            justify-content: center;
+        }
+
+        .nav a {
+            color: rgba(226, 232, 240, 0.8);
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 0.95rem;
+            position: relative;
+            transition: color 0.2s ease;
+        }
+
+        .nav a::after {
+            content: '';
+            position: absolute;
+            left: 0;
+            bottom: -6px;
+            height: 2px;
+            width: 100%;
+            background: rgba(56, 189, 248, 0.9);
+            transform: scaleX(0);
+            transform-origin: left;
+            transition: transform 0.2s ease;
+        }
+
+        .nav a:hover,
+        .nav a.active {
+            color: #fff;
+        }
+
+        .nav a:hover::after,
+        .nav a.active::after {
+            transform: scaleX(1);
+        }
+
+        .status {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            color: white;
+        }
+
+        .status-indicator {
+            width: 12px;
+            height: 12px;
+            background: var(--success);
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+            box-shadow: 0 0 10px rgba(16, 185, 129, 0.5);
+        }
+
+        @keyframes pulse {
+            0%, 100% { 
+                opacity: 1;
+                box-shadow: 0 0 10px rgba(16, 185, 129, 0.5), 0 0 20px rgba(16, 185, 129, 0.3);
+            }
+            50% { 
+                opacity: 0.6;
+                box-shadow: 0 0 5px rgba(16, 185, 129, 0.3);
+            }
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes float {
+            0%, 100% {
+                transform: translateY(0px);
+            }
+            50% {
+                transform: translateY(-10px);
+            }
+        }
+
+        @keyframes shimmer {
+            0%, 100% {
+                opacity: 1;
+            }
+            50% {
+                opacity: 0.8;
+            }
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 2rem auto;
+            padding: 0 2rem;
+            position: relative;
+            z-index: 1;
+        }
+
+        .page-title {
+            font-size: 2rem;
+            margin-bottom: 2rem;
+            color: #e2e8f0;
+            animation: slideUp 0.6s ease-out;
+        }
+
+        /* KPI Cards */
+        .kpi-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .kpi-card {
+            background: rgba(15, 23, 42, 0.85);
+            padding: 2rem;
+            border-radius: 18px;
+            box-shadow: 0 18px 45px rgba(2, 6, 23, 0.5);
+            border: 1px solid rgba(148, 163, 184, 0.15);
+            backdrop-filter: blur(12px);
+            transition: all 0.3s;
+            position: relative;
+            overflow: hidden;
+            animation: slideUp 0.6s ease-out;
+        }
+
+        .kpi-card::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            border-radius: 18px;
+            box-shadow: inset 0 0 0 1px rgba(56, 189, 248, 0.2);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            pointer-events: none;
+        }
+
+        .kpi-card::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -50%;
+            width: 300px;
+            height: 300px;
+            background: radial-gradient(circle, rgba(56, 189, 248, 0.35), transparent);
+            opacity: 0.15;
+            border-radius: 50%;
+        }
+
+        .kpi-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 28px 60px rgba(2, 6, 23, 0.6);
+            border-color: rgba(56, 189, 248, 0.6);
+        }
+
+        .kpi-card:hover::after {
+            opacity: 1;
+        }
+
+        .kpi-card.success {
+            border-left: 4px solid var(--success);
+        }
+
+        .kpi-card.success:hover {
+            border-left-color: var(--success);
+            box-shadow: 0 20px 50px rgba(16, 185, 129, 0.15);
+        }
+
+        .kpi-card.warning {
+            border-left: 4px solid var(--warning);
+        }
+
+        .kpi-card.warning:hover {
+            box-shadow: 0 20px 50px rgba(245, 158, 11, 0.15);
+        }
+
+        .kpi-card.danger {
+            border-left: 4px solid var(--danger);
+        }
+
+        .kpi-card.danger:hover {
+            box-shadow: 0 20px 50px rgba(239, 68, 68, 0.15);
+        }
+
+        .kpi-label {
+            font-size: 0.85rem;
+            color: var(--text-light);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+            position: relative;
+            z-index: 1;
+        }
+
+        .kpi-value {
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: #f8fafc;
+            position: relative;
+            z-index: 1;
+        }
+
+        .kpi-change {
+            font-size: 0.85rem;
+            margin-top: 0.5rem;
+            font-weight: 500;
+            position: relative;
+            z-index: 1;
+        }
+
+        .kpi-change.positive {
+            color: var(--success);
+        }
+
+        .kpi-change.negative {
+            color: var(--danger);
+        }
+
+        /* Charts Grid */
+        .charts-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .chart-card {
+            background: rgba(15, 23, 42, 0.9);
+            padding: 2rem;
+            border-radius: 18px;
+            box-shadow: 0 18px 45px rgba(2, 6, 23, 0.5);
+            border: 1px solid rgba(148, 163, 184, 0.15);
+            backdrop-filter: blur(12px);
+            transition: all 0.3s;
+            animation: slideUp 0.6s ease-out;
+        }
+
+        .chart-card::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            border-radius: 18px;
+            box-shadow: inset 0 0 0 1px rgba(99, 102, 241, 0.2);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            pointer-events: none;
+        }
+
+        .chart-card:hover::after {
+            opacity: 1;
+        }
+
+        .chart-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.12);
+        }
+
+        .chart-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 1.5rem;
+            color: #e2e8f0;
+            border-bottom: 2px solid rgba(56, 189, 248, 0.2);
+            padding-bottom: 1rem;
+        }
+
+        .chart-container {
+            position: relative;
+            height: 300px;
+        }
+
+        /* Tables */
+        .table-card {
+            background: rgba(15, 23, 42, 0.9);
+            padding: 2rem;
+            border-radius: 0.75rem;
+            box-shadow: 0 18px 45px rgba(2, 6, 23, 0.4);
+            overflow-x: auto;
+            border: 1px solid rgba(148, 163, 184, 0.15);
+            backdrop-filter: blur(12px);
+            position: relative;
+        }
+
+        .table-card::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            border-radius: 0.75rem;
+            box-shadow: inset 0 0 0 1px rgba(56, 189, 248, 0.15);
+            pointer-events: none;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        thead {
+            background: rgba(15, 23, 42, 0.8);
+            border-bottom: 2px solid rgba(148, 163, 184, 0.2);
+        }
+
+        th {
+            padding: 1rem;
+            text-align: left;
+            font-weight: 600;
+            color: var(--text);
+        }
+
+        td {
+            padding: 1rem;
+            border-bottom: 1px solid rgba(148, 163, 184, 0.12);
+        }
+
+        tbody tr:hover {
+            background: rgba(56, 189, 248, 0.08);
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            border-radius: 0.25rem;
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+
+        .badge-success {
+            background: rgba(34, 211, 238, 0.2);
+            color: var(--success);
+        }
+
+        .badge-warning {
+            background: rgba(245, 158, 11, 0.2);
+            color: var(--warning);
+        }
+
+        .badge-danger {
+            background: rgba(248, 113, 113, 0.2);
+            color: var(--danger);
+        }
+
+        /* Loading State */
+        .loading {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 300px;
+            color: var(--text);
+        }
+
+        .spinner {
+            border: 4px solid var(--light);
+            border-top: 4px solid var(--primary);
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .charts-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .kpi-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .chart-container {
+                height: 250px;
+            }
+        }
+
+        .refresh-btn {
+            padding: 0.5rem 1.5rem;
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 0.5rem;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+
+        .refresh-btn:hover {
+            background: #1d4ed8;
+            transform: translateY(-2px);
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="header-content">
+            <div class="logo">📊 Analytics Dashboard</div>
+            <nav class="nav">
+                <a href="/">Home</a>
+                <a href="/dashboard" class="active">Dashboard</a>
+                <a href="/api-tester">API Tester</a>
+                <a href="/websocket-demo">WebSocket</a>
+                <a href="/api/docs">Docs</a>
+            </nav>
+            <div class="status">
+                <span class="status-indicator"></span>
+                <span>Live</span>
+                <button class="refresh-btn" onclick="loadDashboardData()">Refresh</button>
+            </div>
+        </div>
+    </header>
+
+    <div class="container">
+        <h1 class="page-title">Platform Analytics</h1>
+
+        <!-- KPI Cards -->
+        <div class="kpi-grid" id="kpiGrid">
+            <div class="kpi-card">
+                <div class="kpi-label">Total Users</div>
+                <div class="kpi-value" id="totalUsers">-</div>
+                <div class="kpi-change">Active accounts</div>
+            </div>
+            <div class="kpi-card success">
+                <div class="kpi-label">Total Scenarios</div>
+                <div class="kpi-value" id="totalScenarios">-</div>
+                <div class="kpi-change">Phishing campaigns</div>
+            </div>
+            <div class="kpi-card warning">
+                <div class="kpi-label">Click Rate</div>
+                <div class="kpi-value" id="clickRate">-</div>
+                <div class="kpi-change">Average % clicked</div>
+            </div>
+            <div class="kpi-card danger">
+                <div class="kpi-label">Report Rate</div>
+                <div class="kpi-value" id="reportRate">-</div>
+                <div class="kpi-change">Average % reported</div>
+            </div>
+        </div>
+
+        <!-- Charts -->
+        <div class="charts-grid">
+            <div class="chart-card">
+                <div class="chart-title">Click Rate Distribution</div>
+                <div class="chart-container">
+                    <canvas id="clickRateChart"></canvas>
+                </div>
+            </div>
+            <div class="chart-card">
+                <div class="chart-title">User Awareness Scores</div>
+                <div class="chart-container">
+                    <canvas id="scoresChart"></canvas>
+                </div>
+            </div>
+            <div class="chart-card">
+                <div class="chart-title">Scenario Performance</div>
+                <div class="chart-container">
+                    <canvas id="scenarioChart"></canvas>
+                </div>
+            </div>
+            <div class="chart-card">
+                <div class="chart-title">Report Rate Trend</div>
+                <div class="chart-container">
+                    <canvas id="reportTrendChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Top Scenarios Table -->
+        <div class="table-card" style="margin-bottom: 2rem;">
+            <h2 class="chart-title">Top Phishing Scenarios</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Scenario Name</th>
+                        <th>Recipients</th>
+                        <th>Clicks</th>
+                        <th>Click Rate</th>
+                        <th>Reports</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody id="scenariosTable">
+                    <tr>
+                        <td colspan="6" class="loading">
+                            <div class="spinner"></div>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Top Users Table -->
+        <div class="table-card">
+            <h2 class="chart-title">User Rankings</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Username</th>
+                        <th>Scenarios Exposed</th>
+                        <th>Clicks</th>
+                        <th>Reports</th>
+                        <th>Training Score</th>
+                        <th>Level</th>
+                    </tr>
+                </thead>
+                <tbody id="usersTable">
+                    <tr>
+                        <td colspan="6" class="loading">
+                            <div class="spinner"></div>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <script>
+        let charts = {};
+
+        async function loadDashboardData() {
+            try {
+                const response = await axios.get('/stats/dashboard');
+                const data = response.data;
+
+                // Update KPI cards
+                document.getElementById('totalUsers').textContent = data.summary.total_users;
+                document.getElementById('totalScenarios').textContent = data.summary.total_scenarios;
+                document.getElementById('clickRate').textContent = data.summary.average_click_rate.toFixed(1) + '%';
+                document.getElementById('reportRate').textContent = data.summary.average_report_rate.toFixed(1) + '%';
+
+                // Update scenarios table
+                const scenariosHTML = data.top_scenarios.map(s => `
+                    <tr>
+                        <td><strong>${s.scenario_name}</strong></td>
+                        <td>${s.total_recipients}</td>
+                        <td>${s.click_count}</td>
+                        <td>${s.click_rate.toFixed(1)}%</td>
+                        <td>${s.report_count}</td>
+                        <td><span class="badge badge-success">Active</span></td>
+                    </tr>
+                `).join('');
+                document.getElementById('scenariosTable').innerHTML = scenariosHTML;
+
+                // Update users table
+                const usersHTML = data.user_rankings.map(u => `
+                    <tr>
+                        <td><strong>${u.username}</strong></td>
+                        <td>${u.total_scenarios_exposed}</td>
+                        <td>${u.clicks}</td>
+                        <td>${u.reports}</td>
+                        <td>${u.training_score.toFixed(0)}/100</td>
+                        <td>
+                            ${u.training_score >= 80 ? '<span class="badge badge-success">Expert</span>' :
+                              u.training_score >= 60 ? '<span class="badge badge-warning">Intermediate</span>' :
+                              '<span class="badge badge-danger">Beginner</span>'}
+                        </td>
+                    </tr>
+                `).join('');
+                document.getElementById('usersTable').innerHTML = usersHTML;
+
+                // Update charts
+                updateCharts(data);
+            } catch (error) {
+                console.error('Error loading dashboard:', error);
+            }
+        }
+
+        function updateCharts(data) {
+            const ctx1 = document.getElementById('clickRateChart').getContext('2d');
+            const ctx2 = document.getElementById('scoresChart').getContext('2d');
+            const ctx3 = document.getElementById('scenarioChart').getContext('2d');
+            const ctx4 = document.getElementById('reportTrendChart').getContext('2d');
+
+            // Destroy existing charts if they exist
+            Object.values(charts).forEach(chart => {
+                if (chart && typeof chart.destroy === 'function') {
+                    chart.destroy();
+                }
+            });
+
+            // Click Rate Distribution
+            charts.clickRate = new Chart(ctx1, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Clicked', 'Not Clicked'],
+                    datasets: [{
+                        data: [data.summary.average_click_rate, 100 - data.summary.average_click_rate],
+                        backgroundColor: ['#ef4444', '#d1d5db'],
+                        borderColor: ['#dc2626', '#9ca3af'],
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { position: 'bottom' }
+                    }
+                }
+            });
+
+            // User Scores
+            charts.scores = new Chart(ctx2, {
+                type: 'bar',
+                data: {
+                    labels: data.user_rankings.slice(0, 5).map(u => u.username),
+                    datasets: [{
+                        label: 'Training Score',
+                        data: data.user_rankings.slice(0, 5).map(u => u.training_score),
+                        backgroundColor: '#2563eb',
+                        borderRadius: 0.5,
+                        maxBarThickness: 50
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    indexAxis: 'y',
+                    scales: {
+                        x: { max: 100 }
+                    }
+                }
+            });
+
+            // Scenario Performance
+            charts.scenario = new Chart(ctx3, {
+                type: 'bar',
+                data: {
+                    labels: data.top_scenarios.map(s => s.scenario_name),
+                    datasets: [
+                        {
+                            label: 'Clicks',
+                            data: data.top_scenarios.map(s => s.click_count),
+                            backgroundColor: '#ef4444'
+                        },
+                        {
+                            label: 'Reports',
+                            data: data.top_scenarios.map(s => s.report_count),
+                            backgroundColor: '#10b981'
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false
+                }
+            });
+
+            // Report Trend
+            charts.reportTrend = new Chart(ctx4, {
+                type: 'line',
+                data: {
+                    labels: ['Week 1', 'Week 2', 'Week 3', 'Week 4', 'Week 5'],
+                    datasets: [{
+                        label: 'Report Rate %',
+                        data: [5, 6, 7.5, 8, 8.2],
+                        borderColor: '#10b981',
+                        backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                        borderWidth: 2,
+                        tension: 0.4,
+                        fill: true
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: { max: 15 }
+                    }
+                }
+            });
+        }
+
+        // Load data on page load
+        loadDashboardData();
+
+        // Auto-refresh every 30 seconds
+        setInterval(loadDashboardData, 30000);
+    </script>
+</body>
+</html>

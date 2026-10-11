@@ -1,0 +1,420 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>API Tester - Dark Signal</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #38bdf8;
+            --secondary: #0ea5e9;
+            --accent: #6366f1;
+            --success: #22d3ee;
+            --danger: #f87171;
+            --dark: #0b1220;
+            --light: #101827;
+            --text: #e2e8f0;
+            --text-light: #94a3b8;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: radial-gradient(circle at 10% 10%, rgba(56, 189, 248, 0.18), transparent 40%),
+                radial-gradient(circle at 90% 15%, rgba(99, 102, 241, 0.18), transparent 45%),
+                linear-gradient(135deg, #060913 0%, #0b1220 100%);
+            color: var(--text);
+            min-height: 100vh;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            background: radial-gradient(circle at 50% 80%, rgba(34, 211, 238, 0.12), transparent 40%);
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        body::after {
+            content: '';
+            position: fixed;
+            inset: 0;
+            background-image:
+                linear-gradient(rgba(56, 189, 248, 0.06) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(56, 189, 248, 0.06) 1px, transparent 1px);
+            background-size: 60px 60px;
+            opacity: 0.35;
+            animation: gridScroll 18s linear infinite;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        @keyframes gridScroll {
+            from { background-position: 0 0, 0 0; }
+            to { background-position: 0 120px, 120px 0; }
+        }
+
+        header {
+            background: linear-gradient(135deg, rgba(15, 23, 42, 0.95), rgba(30, 41, 59, 0.95));
+            backdrop-filter: blur(16px);
+            padding: 1.5rem 2rem;
+            box-shadow: 0 16px 40px rgba(2, 6, 23, 0.6);
+            border-bottom: 1px solid rgba(148, 163, 184, 0.2);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .header-content {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 2rem;
+        }
+
+        header h1 {
+            font-size: 1.7rem;
+            color: white;
+            text-shadow: 0 6px 16px rgba(15, 23, 42, 0.6);
+            margin-bottom: 0;
+        }
+
+        .nav {
+            display: flex;
+            gap: 1.25rem;
+            align-items: center;
+        }
+
+        .nav a {
+            color: rgba(226, 232, 240, 0.8);
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 0.95rem;
+            position: relative;
+            transition: color 0.2s ease;
+        }
+
+        .nav a::after {
+            content: '';
+            position: absolute;
+            left: 0;
+            bottom: -6px;
+            height: 2px;
+            width: 100%;
+            background: rgba(56, 189, 248, 0.9);
+            transform: scaleX(0);
+            transform-origin: left;
+            transition: transform 0.2s ease;
+        }
+
+        .nav a:hover,
+        .nav a.active {
+            color: #fff;
+        }
+
+        .nav a:hover::after,
+        .nav a.active::after {
+            transform: scaleX(1);
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+            position: relative;
+            z-index: 1;
+        }
+
+        .layout {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+        }
+
+        .section {
+            background: rgba(15, 23, 42, 0.9);
+            padding: 2rem;
+            border-radius: 18px;
+            box-shadow: 0 18px 45px rgba(2, 6, 23, 0.5);
+            border: 1px solid rgba(148, 163, 184, 0.15);
+            backdrop-filter: blur(12px);
+            transition: all 0.3s;
+            animation: slideUp 0.6s ease-out;
+            position: relative;
+        }
+
+        .section::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            border-radius: 18px;
+            box-shadow: inset 0 0 0 1px rgba(56, 189, 248, 0.2);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            pointer-events: none;
+        }
+
+        .section:hover::after {
+            opacity: 1;
+        }
+
+        .section:hover {
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.12);
+            transform: translateY(-5px);
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        h2 {
+            font-size: 1.3rem;
+            margin-bottom: 1.5rem;
+            color: var(--text);
+            border-bottom: 2px solid rgba(56, 189, 248, 0.2);
+            padding-bottom: 1rem;
+        }
+
+        label {
+            display: block;
+            margin-top: 1.2rem;
+            font-weight: 600;
+            color: var(--text);
+            font-size: 0.95rem;
+        }
+
+        select, input, textarea {
+            width: 100%;
+            padding: 0.85rem;
+            margin-top: 0.5rem;
+            border: 2px solid rgba(148, 163, 184, 0.2);
+            border-radius: 10px;
+            font-family: monospace;
+            font-size: 0.9rem;
+            transition: all 0.3s;
+            background: #0b1220;
+            color: var(--text);
+        }
+
+        select:focus, input:focus, textarea:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.2);
+        }
+
+        textarea {
+            resize: vertical;
+            min-height: 150px;
+        }
+
+        button {
+            width: 100%;
+            padding: 1rem;
+            margin-top: 1.5rem;
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-weight: 700;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 12px 30px rgba(56, 189, 248, 0.25);
+        }
+
+        button::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: rgba(255, 255, 255, 0.2);
+            transition: left 0.3s;
+        }
+
+        button:hover::before {
+            left: 100%;
+        }
+
+        button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 16px 40px rgba(56, 189, 248, 0.35);
+        }
+
+        .response {
+            background: linear-gradient(135deg, rgba(15, 23, 42, 0.9) 0%, rgba(30, 41, 59, 0.9) 100%);
+            padding: 1.5rem;
+            border-radius: 12px;
+            margin-top: 1rem;
+            max-height: 400px;
+            overflow-y: auto;
+            font-family: 'Courier New', monospace;
+            font-size: 0.85rem;
+            color: var(--text-light);
+            border: 1px solid rgba(148, 163, 184, 0.2);
+            transition: all 0.3s;
+        }
+
+        .response.success {
+            border-left: 4px solid var(--success);
+            background: linear-gradient(135deg, rgba(34, 211, 238, 0.12) 0%, rgba(15, 23, 42, 0.9) 100%);
+            color: var(--text);
+        }
+
+        .response.error {
+            border-left: 4px solid var(--danger);
+            background: linear-gradient(135deg, rgba(248, 113, 113, 0.15) 0%, rgba(15, 23, 42, 0.9) 100%);
+            color: #fecaca;
+        }
+
+        .endpoint {
+            background: linear-gradient(135deg, rgba(37, 99, 235, 0.1) 0%, rgba(124, 58, 237, 0.05) 100%);
+            padding: 1rem;
+            border-radius: 10px;
+            margin: 0.5rem 0;
+            font-family: monospace;
+            cursor: pointer;
+            transition: all 0.3s;
+            border: 1px solid rgba(37, 99, 235, 0.2);
+            font-size: 0.9rem;
+            word-break: break-all;
+        }
+
+        .endpoint:hover {
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            color: white;
+            transform: translateX(5px);
+            box-shadow: 0 5px 15px rgba(37, 99, 235, 0.3);
+        }
+
+        @media (max-width: 1024px) {
+            .layout {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="header-content">
+            <h1>🔌 API Tester</h1>
+            <nav class="nav">
+                <a href="/">Home</a>
+                <a href="/dashboard">Dashboard</a>
+                <a href="/api-tester" class="active">API Tester</a>
+                <a href="/websocket-demo">WebSocket</a>
+                <a href="/api/docs">Docs</a>
+            </nav>
+        </div>
+    </header>
+
+    <div class="container">
+        <div class="layout">
+            <div class="section">
+                <h2>Select Endpoint</h2>
+                <label>Available Endpoints:</label>
+                <div id="endpoints"></div>
+
+                <label for="method">HTTP Method:</label>
+                <select id="method">
+                    <option>GET</option>
+                    <option>POST</option>
+                    <option>PUT</option>
+                    <option>DELETE</option>
+                </select>
+
+                <label for="url">URL:</label>
+                <input type="text" id="url" placeholder="http://localhost:8000/api/endpoint">
+
+                <label for="body">Request Body (JSON):</label>
+                <textarea id="body" placeholder='{"key": "value"}'></textarea>
+
+                <button onclick="testEndpoint()">Send Request</button>
+            </div>
+
+            <div class="section">
+                <h2>Response</h2>
+                <div id="response" class="response" style="display:none;"></div>
+                <div style="color: #999; padding: 1.5rem; text-align: center;">
+                    <p>Response will appear here...</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const endpoints = [
+            { name: 'Health Check', method: 'GET', url: '/health' },
+            { name: 'Dashboard Stats', method: 'GET', url: '/stats/dashboard' },
+            { name: 'Get Users', method: 'GET', url: '/users/' },
+            { name: 'Get Scenarios', method: 'GET', url: '/scenarios/' },
+            { name: 'Get Events', method: 'GET', url: '/events/' },
+            { name: 'Get Analytics', method: 'GET', url: '/analytics/' },
+            { name: 'API Docs', method: 'GET', url: '/api/docs' },
+        ];
+
+        function populateEndpoints() {
+            const container = document.getElementById('endpoints');
+            endpoints.forEach(ep => {
+                const div = document.createElement('div');
+                div.className = 'endpoint';
+                div.textContent = `${ep.method} ${ep.url}`;
+                div.onclick = () => {
+                    document.getElementById('method').value = ep.method;
+                    document.getElementById('url').value = `http://localhost:8000${ep.url}`;
+                };
+                container.appendChild(div);
+            });
+        }
+
+        async function testEndpoint() {
+            const method = document.getElementById('method').value;
+            const url = document.getElementById('url').value;
+            const body = document.getElementById('body').value;
+
+            const responseDiv = document.getElementById('response');
+
+            try {
+                const options = { method };
+                if (body && (method === 'POST' || method === 'PUT')) {
+                    options.headers = { 'Content-Type': 'application/json' };
+                    options.body = body;
+                }
+
+                const response = await fetch(url, options);
+                const data = await response.json();
+
+                responseDiv.className = 'response ' + (response.ok ? 'success' : 'error');
+                responseDiv.textContent = JSON.stringify(data, null, 2);
+                responseDiv.style.display = 'block';
+            } catch (error) {
+                responseDiv.className = 'response error';
+                responseDiv.textContent = `Error: ${error.message}`;
+                responseDiv.style.display = 'block';
+            }
+        }
+
+        populateEndpoints();
+    </script>
+</body>
+</html>
